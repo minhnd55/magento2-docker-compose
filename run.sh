@@ -1,25 +1,48 @@
 #!/bin/bash
 
-PROJECT='wap.local'
-WWWPROJECT='www.wap.local'
-APPNAME='magento2_nginx'
-XDEBUG_HOST='192.168.11.15'
+PROJECT='sample.local'
+APPNAME='sample_container'
+XDEBUG_HOST='127.0.0.1'
 
 ENDC=`tput setaf 7`
 RED=`tput setaf 1`
 GREEN=`tput setaf 2`
 YELLOW=`tput setaf 3`
 
-echo $YELLOW "Start docker services" $ENDC
-docker-compose up -d
-
 if [ -n "$1" ]; then
 	PROJECT=$1
+else
+	exit 0
 fi
 
-init_conf() {
-	sed -i "s/xdebug_remote_host/${XDEBUG_HOST}/g" docker-compose.yml
-}
+if [ -n "$2" ]; then
+	APPNAME=$2
+else
+	exit 0	
+fi
+
+if [ -n "$3" ]; then
+	ROOT_DIR=$3
+else
+	exit 0	
+fi
+
+echo $YELLOW "Start docker services" $ENDC
+
+WPROJECT='www.'$PROJECT
+XDEBUG_HOST=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+
+if [ -s 'docker-compose.yml' ]; then
+	rm docker-compose.yml
+fi	
+
+cp docker-compose.yaml.sample docker-compose.yml
+
+sed -i "s/container_name_variable/${APPNAME}/g" docker-compose.yml
+sed -i "s|root_dir|${ROOT_DIR}|g" docker-compose.yml
+sed -i "s/xdebug_remote_host/${XDEBUG_HOST}/g" docker-compose.yml
+
+docker-compose up -d
 
 nginx_conf() {
 	NGINX_CONTAINER_ID=$(docker ps | grep ${APPNAME} | awk '{print $1}')
@@ -44,11 +67,11 @@ nginx_conf() {
 	fi
 
 
-	CONDITION="grep -q '"$WWWPROJECT"' /etc/hosts"
-	if eval $CONDITION; then
-		CMD="sudo sed -i -r \"s/^ *[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+( +"$WWWPROJECT")/"$IP" "$WWWPROJECT"/\" /etc/hosts";
+	WCONDITION="grep -q '"$WPROJECT"' /etc/hosts"
+	if eval $WCONDITION; then
+		WCMD="sudo sed -i -r \"s/^ *[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+( +"$WPROJECT")/"$IP" "$WPROJECT"/\" /etc/hosts";
 	else
-		CMD="sudo sed -i '\$a\\\\n# Added automatically by run.sh\n"$IP" "$WWWPROJECT"\n' /etc/hosts";
+		WCMD="sudo sed -i '\$a\\\\n# Added automatically by run.sh\n"$IP" "$WPROJECT"\n' /etc/hosts";
 	fi
 	
 	echo Nginx server image loaded at http://$IP [Internal IP]
@@ -59,8 +82,13 @@ nginx_conf() {
 		exit 1
 	fi
 
-	echo $GREEN Go to http://$PROJECT $ENDC
+	eval $WCMD
+	if [ "$?" -ne 0 ]; then
+		echo $RED ERROR: Could not update $WPROJECT to hosts file. $ENDC
+		exit 1
+	fi
+
+	echo $GREEN Go to http://$PROJECT or http://$WPROJECT $ENDC
 }
 
-init_conf
 nginx_conf

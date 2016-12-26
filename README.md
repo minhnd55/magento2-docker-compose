@@ -92,3 +92,23 @@ magento cache:flush
 You can copy `docker-compose.override.yml.dist` to `docker-compose.override.yml` and adjust environment variables, volume mounts etc in the `docker-compose.override.yml` file to avoid losing local configuration changes when you pull changes to this repository. 
 
 Docker Compose will automatically read any of the values you define in the file. See [this link](https://docs.docker.com/compose/extends/#/understanding-multiple-compose-files) for more information about the override file. 
+
+## Usage 
+
+**IMPORTANT**
+
+```
+./run.sh PROJECT APPNAME ROOT_DIR
+```
+
+PROJECT: Domain for application.
+
+APPNAME: Container name for application.
+
+ROOT_DIR: Root folder of project.
+
+Example:
+
+```
+./run.sh sample.local magento2_nginx /var/www/sample
+```
