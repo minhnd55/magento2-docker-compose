@@ -30,7 +30,7 @@ fi
 echo $YELLOW "Start docker services" $ENDC
 
 WPROJECT='www.'$PROJECT
-XDEBUG_HOST=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+XDEBUG_HOST=$(hostname -I | awk '{print $1}')
 
 if [ -s 'docker-compose.yml' ]; then
 	rm docker-compose.yml
