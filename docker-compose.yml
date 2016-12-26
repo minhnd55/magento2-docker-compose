@@ -2,31 +2,36 @@
 # Version 5.0.0
 
 app:
-  image: mageinferno/magento2-nginx:1.11-0
+  image: minhrau92/magento2-nginx:local
+  container_name: magento2_nginx
   links:
     - phpfpm
 #    - db
   volumes_from:
     - appdata
+  volumes:
+    - ./nginx/logs:/var/log/nginx
+    # - ./nginx/conf:/etc/nginx/conf.d/
   ports:
     - 8000:80
 
 appdata:
   image: tianon/true
   volumes:
-    - ./../../:/var/www/html
+    - ./../../../:/var/www/html
 #    - ~/.composer:/var/www/.composer
 #    - ./html/app/code:/var/www/html/app/code
 #    - ./html/app/design:/var/www/html/app/design
 
 phpfpm:
   image: minhrau92/magento2-php
+  container_name: magento2_phpfpm
 #  links:
 #    - db
   volumes_from:
     - appdata
   environment:
-      XDEBUG_CONFIG: remote_host=192.168.11.186
+      XDEBUG_CONFIG: remote_host=192.168.11.15
 #db:
 #  image: percona:5.7
 #  volumes_from:
