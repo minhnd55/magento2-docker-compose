@@ -24,7 +24,7 @@ appdata:
 #    - ./html/app/design:/var/www/html/app/design
 
 phpfpm:
-  image: minhrau92/magento2-php
+  image: minhrau92/magento2-php7:local
 #  links:
 #    - db
   volumes_from:
