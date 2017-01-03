@@ -2,7 +2,7 @@
 # Version 5.0.0
 
 app:
-  image: minhrau92/magento2-nginx:local
+  image: minhrau92/magento2-nginx:local-wp
   container_name: container_name_variable
   links:
     - phpfpm
